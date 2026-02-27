@@ -52,7 +52,7 @@ for (let day in data.days) {
     option.text = day;
     daySelect.appendChild(option);
 }
-
+daySelect.selectedIndex = 0;
 function loadDay(day) {
     let points = data.days[day];
     if (!points || points.length < 2) return;
