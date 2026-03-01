@@ -70,10 +70,9 @@ function loadDay(day) {
 
     map.fitBounds(latlngs);
     currentIndex = 0;
-
-    window.currentPoints = latlngs;
+    window.currentPoints = points;
 }
-
+renderAnalysis(points);
 function play() {
     let speed = document.getElementById("speed").value;
     clearInterval(timer);
