@@ -11,33 +11,31 @@
 />
 
 <style>
-  body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 0;
-  }
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+}
 
-  #controls {
-    padding: 15px;
-    background: #f4f4f4;
-  }
+#controls {
+  padding: 15px;
+  background: #f4f4f4;
+}
 
-  select, button {
-    font-size: 18px;
-    padding: 10px;
-    margin-right: 10px;
-  }
+select, button {
+  font-size: 18px;
+  padding: 10px;
+  margin-right: 10px;
+}
 
-  #map {
-    height: 60vh;
-  }
+#map {
+  height: 60vh;
+}
 
-  #info {
-    padding: 15px;
-    font-size: 18px;
-    background: #ffffff;
-    border-top: 1px solid #ccc;
-  }
+#info {
+  padding: 15px;
+  font-size: 18px;
+  border-top: 1px solid #ccc;
+}
 </style>
 </head>
 
@@ -51,7 +49,7 @@
 </div>
 
 <div id="map"></div>
-<div id="info">No stop selected.</div>
+<div id="info">Loading...</div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
@@ -61,6 +59,14 @@ const map = L.map('map').setView([53.2, -105.75], 7);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   maxZoom: 19
 }).addTo(map);
+
+const bigIcon = L.icon({
+  iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+  iconSize: [45, 75],
+  iconAnchor: [22, 75],
+  shadowSize: [75, 75]
+});
 
 let marker = null;
 let stopsByDay = {};
@@ -90,88 +96,63 @@ function parseGeo(str) {
 }
 
 fetch("location-history.json")
-  .then(res => res.json())
-  .then(data => {
+.then(res => res.json())
+.then(data => {
 
-    data.forEach(entry => {
+  data.forEach(entry => {
 
-  let latLng = null;
+    let latLng = null;
 
-  // VISITS
-  if (entry.visit && entry.visit.topCandidate?.placeLocation) {
-    latLng = parseGeo(entry.visit.topCandidate.placeLocation);
-  }
-
-  // ACTIVITIES (treat start location as stop)
-  if (!latLng && entry.activity && entry.activity.start) {
-    latLng = parseGeo(entry.activity.start);
-  }
-
-  if (!latLng) return;
-
-  const durationMs = new Date(entry.endTime) - new Date(entry.startTime);
-  const durationSeconds = durationMs / 1000;
-
-  // Only include stops longer than 10 seconds
-  if (durationSeconds < 10) return;
-
-  const date = new Date(entry.startTime);
-  const dayKey = date.toISOString().split("T")[0];
-
-  if (!stopsByDay[dayKey]) {
-    stopsByDay[dayKey] = [];
-  }
-
-  stopsByDay[dayKey].push({
-    latLng,
-    start: entry.startTime,
-    end: entry.endTime,
-    durationSeconds
-  });
-
-});
-
-      let latLng = null;
-
-      if (entry.visit && entry.visit.topCandidate?.placeLocation) {
-        latLng = parseGeo(entry.visit.topCandidate.placeLocation);
-      }
-
-      if (!latLng) return;
-
-      const date = new Date(entry.startTime);
-      const dayKey = date.toISOString().split("T")[0];
-
-      if (!stopsByDay[dayKey]) {
-        stopsByDay[dayKey] = [];
-      }
-
-      stopsByDay[dayKey].push({
-        latLng,
-        start: entry.startTime,
-        end: entry.endTime
-      });
-
-    });
-
-    const select = document.getElementById("daySelect");
-
-    Object.keys(stopsByDay).sort().forEach(day => {
-      const option = document.createElement("option");
-      option.value = day;
-      option.textContent = day;
-      select.appendChild(option);
-    });
-
-    select.addEventListener("change", () => {
-      loadDay(select.value);
-    });
-
-    if (select.options.length > 0) {
-      loadDay(select.options[0].value);
+    if (entry.visit && entry.visit.topCandidate?.placeLocation) {
+      latLng = parseGeo(entry.visit.topCandidate.placeLocation);
     }
 
+    if (!latLng && entry.activity && entry.activity.start) {
+      latLng = parseGeo(entry.activity.start);
+    }
+
+    if (!latLng) return;
+
+    const durationMs = new Date(entry.endTime) - new Date(entry.startTime);
+    const durationSeconds = durationMs / 1000;
+    if (durationSeconds < 10) return;
+
+    const localDate = new Date(entry.startTime);
+    const year = localDate.getFullYear();
+    const month = String(localDate.getMonth() + 1).padStart(2, "0");
+    const day = String(localDate.getDate()).padStart(2, "0");
+    const dayKey = `${year}-${month}-${day}`;
+
+    if (!stopsByDay[dayKey]) {
+      stopsByDay[dayKey] = [];
+    }
+
+    stopsByDay[dayKey].push({
+      latLng,
+      start: entry.startTime,
+      end: entry.endTime
+    });
+
   });
+
+  const select = document.getElementById("daySelect");
+
+  Object.keys(stopsByDay).sort().forEach(day => {
+    const option = document.createElement("option");
+    option.value = day;
+    option.textContent = day;
+    select.appendChild(option);
+  });
+
+  select.addEventListener("change", () => {
+    loadDay(select.value);
+  });
+
+  if (select.options.length > 0) {
+    loadDay(select.options[0].value);
+  }
+
+});
 
 function loadDay(day) {
   currentStops = stopsByDay[day] || [];
@@ -186,12 +167,11 @@ function loadDay(day) {
 
 function showStop() {
   const stop = currentStops[currentIndex];
-
   if (!stop) return;
 
   if (marker) map.removeLayer(marker);
 
-  marker = L.marker(stop.latLng).addTo(map);
+  marker = L.marker(stop.latLng, { icon: bigIcon }).addTo(map);
   map.setView(stop.latLng, 13);
 
   document.getElementById("info").innerHTML = `
