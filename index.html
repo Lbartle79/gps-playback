@@ -2,194 +2,183 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta charset="utf-8">
-<title>GPS Playback</title>
+<meta charset="utf-8" />
+<title>GPS Stop Playback</title>
 
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<link
+  rel="stylesheet"
+  href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+/>
 
 <style>
-body { margin:0; font-family:Arial, sans-serif; }
-#controls { padding:10px; background:#f0f0f0; }
-#map { height:60vh; width:100%; }
-#log { padding:10px; }
-button { margin-left:5px; }
+  body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+  }
+
+  #controls {
+    padding: 15px;
+    background: #f4f4f4;
+  }
+
+  select, button {
+    font-size: 18px;
+    padding: 10px;
+    margin-right: 10px;
+  }
+
+  #map {
+    height: 60vh;
+  }
+
+  #info {
+    padding: 15px;
+    font-size: 18px;
+    background: #ffffff;
+    border-top: 1px solid #ccc;
+  }
 </style>
 </head>
+
 <body>
 
 <div id="controls">
-Day:
-<select id="daySelect"></select>
-<button onclick="startPlayback()">Play</button>
-<button onclick="pausePlayback()">Pause</button>
-<button onclick="resetPlayback()">Reset</button>
-Speed:
-<input type="range" id="speed" min="200" max="2000" value="800">
+  <label>Select Day:</label>
+  <select id="daySelect"></select>
+  <button onclick="prevStop()">Previous</button>
+  <button onclick="nextStop()">Next</button>
 </div>
 
 <div id="map"></div>
-<div id="log"></div>
+<div id="info">No stop selected.</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
-
-const TIMEZONE = "America/Regina";
-
-let map = L.map('map').setView([53, -105], 7);
+const map = L.map('map').setView([53.2, -105.75], 7);
 
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 19
+  maxZoom: 19
 }).addTo(map);
 
-let marker = L.marker([53, -105]).addTo(map);
-let polyline = L.polyline([], { color: 'blue' }).addTo(map);
-
-let groupedData = {};
-let currentDayData = [];
-let playbackIndex = 0;
-let timer = null;
+let marker = null;
+let stopsByDay = {};
+let currentStops = [];
+let currentIndex = 0;
 
 function formatTime(dateStr) {
-    return new Date(dateStr).toLocaleString("en-CA", {
-        timeZone: TIMEZONE,
-        year: 'numeric',
-        month: 'short',
-        day: '2-digit',
-        hour: 'numeric',
-        minute: '2-digit',
-        hour12: true
-    });
+  const date = new Date(dateStr);
+  return date.toLocaleString(undefined, {
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true
+  });
 }
 
 function formatDuration(start, end) {
-    let diff = (new Date(end) - new Date(start)) / 60000;
-    let h = Math.floor(diff / 60);
-    let m = Math.floor(diff % 60);
-    return h + "h " + m + "m";
+  const ms = new Date(end) - new Date(start);
+  const minutes = Math.floor(ms / 60000);
+  const hours = Math.floor(minutes / 60);
+  const mins = minutes % 60;
+  return `${hours}h ${mins}m`;
 }
 
-function groupByDay(data) {
-    let grouped = {};
-    data.forEach(entry => {
-        if (!entry.startTime) return;
-        let date = new Date(entry.startTime)
-            .toLocaleDateString("en-CA", { timeZone: TIMEZONE });
-
-        if (!grouped[date]) grouped[date] = [];
-        grouped[date].push(entry);
-    });
-    return grouped;
-}
-
-function moveMarker(entry) {
-
-    let lat = null;
-    let lng = null;
-
-    if (entry.activity && entry.activity.end) {
-        let coords = entry.activity.end.replace("geo:", "").split(",");
-        lat = parseFloat(coords[0]);
-        lng = parseFloat(coords[1]);
-    }
-
-    if (entry.visit && entry.visit.point) {
-        let coords = entry.visit.point.replace("geo:", "").split(",");
-        lat = parseFloat(coords[0]);
-        lng = parseFloat(coords[1]);
-    }
-
-    if (lat !== null && lng !== null) {
-        marker.setLatLng([lat, lng]);
-        map.setView([lat, lng], 12);
-        polyline.addLatLng([lat, lng]);
-    }
-}
-
-function playStep() {
-    if (playbackIndex >= currentDayData.length) {
-        pausePlayback();
-        return;
-    }
-
-    moveMarker(currentDayData[playbackIndex]);
-    playbackIndex++;
-}
-
-function startPlayback() {
-    if (timer) return;
-    let speed = document.getElementById("speed").value;
-    timer = setInterval(playStep, speed);
-}
-
-function pausePlayback() {
-    clearInterval(timer);
-    timer = null;
-}
-
-function resetPlayback() {
-    pausePlayback();
-    playbackIndex = 0;
-    polyline.setLatLngs([]);
-    document.getElementById("log").innerHTML = "";
-}
-
-function showStops(day) {
-    let html = "";
-    currentDayData.forEach(entry => {
-        if (entry.startTime && entry.endTime) {
-            html += `
-            <div>
-                <b>Start:</b> ${formatTime(entry.startTime)}<br>
-                <b>End:</b> ${formatTime(entry.endTime)}<br>
-                <b>Duration:</b> ${formatDuration(entry.startTime, entry.endTime)}
-            </div><hr>`;
-        }
-    });
-    document.getElementById("log").innerHTML = html;
-}
-
-function loadDay(day) {
-    pausePlayback();
-    playbackIndex = 0;
-    polyline.setLatLngs([]);
-
-    currentDayData = groupedData[day] || [];
-
-    if (currentDayData.length > 0) {
-        moveMarker(currentDayData[0]);
-        showStops(day);
-    }
+function parseGeo(str) {
+  const coords = str.replace("geo:", "").split(",");
+  return [parseFloat(coords[0]), parseFloat(coords[1])];
 }
 
 fetch("location-history.json")
-    .then(response => response.json())
-    .then(data => {
+  .then(res => res.json())
+  .then(data => {
 
-        groupedData = groupByDay(data);
+    data.forEach(entry => {
 
-        let select = document.getElementById("daySelect");
+      let latLng = null;
 
-        Object.keys(groupedData)
-            .sort()
-            .forEach(day => {
-                let opt = document.createElement("option");
-                opt.value = day;
-                opt.textContent = day;
-                select.appendChild(opt);
-            });
+      if (entry.visit && entry.visit.topCandidate?.placeLocation) {
+        latLng = parseGeo(entry.visit.topCandidate.placeLocation);
+      }
 
-        select.onchange = () => loadDay(select.value);
+      if (!latLng) return;
 
-        if (select.options.length > 0) {
-            loadDay(select.value);
-        }
-    })
-    .catch(err => {
-        document.getElementById("log").innerHTML =
-            "Error loading JSON file.";
-        console.error(err);
+      const date = new Date(entry.startTime);
+      const dayKey = date.toISOString().split("T")[0];
+
+      if (!stopsByDay[dayKey]) {
+        stopsByDay[dayKey] = [];
+      }
+
+      stopsByDay[dayKey].push({
+        latLng,
+        start: entry.startTime,
+        end: entry.endTime
+      });
+
     });
 
+    const select = document.getElementById("daySelect");
+
+    Object.keys(stopsByDay).sort().forEach(day => {
+      const option = document.createElement("option");
+      option.value = day;
+      option.textContent = day;
+      select.appendChild(option);
+    });
+
+    select.addEventListener("change", () => {
+      loadDay(select.value);
+    });
+
+    if (select.options.length > 0) {
+      loadDay(select.options[0].value);
+    }
+
+  });
+
+function loadDay(day) {
+  currentStops = stopsByDay[day] || [];
+  currentIndex = 0;
+
+  if (currentStops.length > 0) {
+    showStop();
+  } else {
+    document.getElementById("info").textContent = "No stops for this day.";
+  }
+}
+
+function showStop() {
+  const stop = currentStops[currentIndex];
+
+  if (!stop) return;
+
+  if (marker) map.removeLayer(marker);
+
+  marker = L.marker(stop.latLng).addTo(map);
+  map.setView(stop.latLng, 13);
+
+  document.getElementById("info").innerHTML = `
+    <strong>Arrival:</strong> ${formatTime(stop.start)}<br>
+    <strong>Departure:</strong> ${formatTime(stop.end)}<br>
+    <strong>Duration:</strong> ${formatDuration(stop.start, stop.end)}
+  `;
+}
+
+function nextStop() {
+  if (currentIndex < currentStops.length - 1) {
+    currentIndex++;
+    showStop();
+  }
+}
+
+function prevStop() {
+  if (currentIndex > 0) {
+    currentIndex--;
+    showStop();
+  }
+}
 </script>
+
 </body>
 </html>
