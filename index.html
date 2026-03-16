@@ -54,6 +54,10 @@ select, button {
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
+let data = {
+  "month": "January 2026",
+  "days": {}
+};
 const map = L.map('map').setView([53.2, -105.75], 7);
 
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
