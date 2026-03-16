@@ -164,11 +164,17 @@ points.forEach((p,i) => {
 
 let row = document.createElement("
 row.innerText =
-p.time.toLocaleTimeString() +
-"  |  " +
-p.lat.toFixed(5) +
-"," +
-p.lng.toFixed(5);
+"STOP\n"+
+p.time.toLocaleTimeString()+"\n"+
+p.lat.toFixed(5)+", "+p.lng.toFixed(5);
+
+getAddress(p.lat,p.lng).then(addr=>{
+  row.innerText =
+  "STOP\n"+
+  p.time.toLocaleTimeString()+"\n"+
+  addr+"\n"+
+  p.lat.toFixed(5)+","+p.lng.toFixed(5);
+});
 row.style.cursor="pointer";
 row.style.padding="4px";
 
@@ -187,14 +193,30 @@ let p = currentPoints[i];
 marker.setLatLng([p.lat,p.lng]);
 
 map.setView([p.lat,p.lng],14);
-
 L.circleMarker([p.lat,p.lng],{
-radius:4,
-color:"orange"
+  radius:7,
+  color:"yellow",
+  fillOpacity:0.9
 }).addTo(routeLayer);
 
 }
+async function getAddress(lat,lng){
 
+  try{
+    const r = await fetch(
+      "https://nominatim.openstreetmap.org/reverse?format=json&lat="+lat+"&lon="+lng
+    );
+
+    const data = await r.json();
+
+    if(data.display_name)
+      return data.display_name;
+
+  }catch(e){}
+
+  return "Address unavailable";
+
+}
 function play(){
 
 clearInterval(timer);
