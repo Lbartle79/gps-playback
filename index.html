@@ -30,20 +30,6 @@ body { margin:0; font-family: Arial; }
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
-
-let data = {
-  month:"January 2026",
-  days:{
-    "2026-01-01":[
-      {lat:53.212,lng:-105.743,time:"08:00"},
-      {lat:53.230,lng:-105.700,time:"08:10"},
-      {lat:53.250,lng:-105.640,time:"08:25"},
-      {lat:53.290,lng:-105.580,time:"08:40"},
-      {lat:53.320,lng:-105.520,time:"09:00"}
-    ]
-  }
-};
-
 let map = L.map('map').setView([53.2,-105.7],6);
 
 L.tileLayer(
@@ -51,92 +37,165 @@ L.tileLayer(
 {maxZoom:19}
 ).addTo(map);
 
+let routeLayer = L.layerGroup().addTo(map);
 let marker = null;
-let polyline = null;
-let currentIndex = 0;
+let currentPoints = [];
+let index = 0;
 let timer = null;
 
-let daySelect = document.getElementById("daySelect");
+async function loadTimeline(){
 
-for(let day in data.days){
- let option=document.createElement("option");
- option.value=day;
- option.text=day;
- daySelect.appendChild(option);
+const response = await fetch("location_history_raw_dump.csv");
+const text = await response.text();
+
+let points = [];
+
+text.split("\n").forEach(line => {
+
+let geo = line.match(/geo:([0-9.-]+),([0-9.-]+)/);
+let time = line.match(/startTime': '([^']+)/);
+
+if(geo && time){
+
+points.push({
+lat:parseFloat(geo[1]),
+lng:parseFloat(geo[2]),
+time:new Date(time[1])
+});
+
 }
 
-function loadDay(day){
+});
 
-let points=data.days[day];
+buildDays(points);
 
-if(marker) map.removeLayer(marker);
-if(polyline) map.removeLayer(polyline);
+}
 
-let latlngs=points.map(p=>[p.lat,p.lng]);
+function buildDays(points){
 
-polyline=L.polyline([], {color:'blue'}).addTo(map);
+let days = {};
 
-marker=L.circleMarker(latlngs[0],{radius:6,color:'red'}).addTo(map);
+points.forEach(p => {
 
-map.fitBounds(latlngs);
+let day = p.time.toISOString().slice(0,10);
 
-currentIndex=0;
-window.currentPoints=points;
+if(!days[day]) days[day] = [];
+
+days[day].push(p);
+
+});
+
+let select = document.getElementById("daySelect");
+
+Object.keys(days).sort().forEach(day => {
+
+let opt = document.createElement("option");
+opt.value = day;
+opt.text = day;
+
+select.appendChild(opt);
+
+});
+
+select.addEventListener("change", () => loadDay(days[select.value]));
+
+loadDay(days[Object.keys(days)[0]]);
+
+}
+
+function loadDay(points){
+
+routeLayer.clearLayers();
+
+currentPoints = points;
+index = 0;
+
+let latlngs = points.map(p => [p.lat,p.lng]);
+
+let route = L.polyline(latlngs,{color:"blue"}).addTo(routeLayer);
+
+let start = latlngs[0];
+let end = latlngs[latlngs.length-1];
+
+L.marker(start).addTo(routeLayer).bindPopup("Start of Day");
+L.marker(end).addTo(routeLayer).bindPopup("End of Day");
+
+marker = L.circleMarker(start,{
+radius:6,
+color:"red"
+}).addTo(routeLayer);
+
+map.fitBounds(route.getBounds());
+
+buildTimeline(points);
+
+}
+
+function buildTimeline(points){
+
+let timeline = document.getElementById("timeline");
+
+if(!timeline) return;
+
+timeline.innerHTML = "";
+
+points.forEach((p,i) => {
+
+let row = document.createElement("div");
+
+row.innerText = p.time.toLocaleTimeString();
+
+row.style.cursor="pointer";
+row.style.padding="4px";
+
+row.onclick = () => jumpTo(i);
+
+timeline.appendChild(row);
+
+});
+
+}
+
+function jumpTo(i){
+
+let p = currentPoints[i];
+
+marker.setLatLng([p.lat,p.lng]);
+
+map.setView([p.lat,p.lng],14);
+
+L.circleMarker([p.lat,p.lng],{
+radius:4,
+color:"orange"
+}).addTo(routeLayer);
 
 }
 
 function play(){
 
-let speed=document.getElementById("speed").value;
-
 clearInterval(timer);
 
-timer=setInterval(()=>{
+timer = setInterval(()=>{
 
-if(currentIndex>=window.currentPoints.length) return;
+if(index>=currentPoints.length) return;
 
-let p=window.currentPoints[currentIndex];
+let p = currentPoints[index];
 
-polyline.addLatLng([p.lat,p.lng]);
 marker.setLatLng([p.lat,p.lng]);
 
-currentIndex++;
+index++;
 
-},1000/speed);
+},1000);
 
 }
 
 function pause(){
+
 clearInterval(timer);
-}
-
-daySelect.addEventListener("change",function(){
-loadDay(this.value);
-});
-async function loadData(){
-
-const response = await fetch("location_history_raw_dump.csv");
-const text = await response.text();
-
-let lines = text.split("\n");
-let coords = [];
-
-lines.forEach(line => {
-
-let match = line.match(/geo:([0-9.-]+),([0-9.-]+)/);
-
-if(match){
-coords.push([parseFloat(match[1]),parseFloat(match[2])]);
-}
-
-});
-
-window.coords = coords;
-play();
 
 }
-loadData();
-loadDay(daySelect.value);
+
+loadTimeline();
 
 </script>
 
