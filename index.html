@@ -162,10 +162,13 @@ timeline.innerHTML = "";
 
 points.forEach((p,i) => {
 
-let row = document.createElement("div");
-
-row.innerText = p.time.toLocaleTimeString();
-
+let row = document.createElement("
+row.innerText =
+p.time.toLocaleTimeString() +
+"  |  " +
+p.lat.toFixed(5) +
+"," +
+p.lng.toFixed(5);
 row.style.cursor="pointer";
 row.style.padding="4px";
 
