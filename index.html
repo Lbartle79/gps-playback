@@ -15,9 +15,7 @@ body { margin:0; font-family: Arial; }
 </head>
 
 <body>
-119 L.marker(start,{title:"Start of Day"}).addTo(routeLayer);
 
-120 L.marker(end,{title:"End of Day"}).addTo(routeLayer);
 <div id="controls">
 <label>Day:</label>
 <select id="daySelect"></select>
@@ -118,9 +116,9 @@ let route = L.polyline(latlngs,{color:"blue"}).addTo(routeLayer);
 
 let start = latlngs[0];
 let end = latlngs[latlngs.length-1];
+L.marker(start,{title:"Start of Day"}).addTo(routeLayer);
+L.marker(end,{title:"End of Day"}).addTo(routeLayer);
 
-L.marker(start).addTo(routeLayer).bindPopup("Start of Day");
-L.marker(end).addTo(routeLayer).bindPopup("End of Day");
 
 marker = L.circleMarker(start,{
 radius:6,
@@ -130,7 +128,28 @@ color:"red"
 map.fitBounds(route.getBounds());
 
 buildTimeline(points);
+for(let i=1;i<points.length;i++){
 
+  let prev = points[i-1];
+  let curr = points[i];
+
+  let dist = map.distance([prev.lat,prev.lng],[curr.lat,curr.lng]);
+  let time = (curr.time - prev.time)/60000;
+
+  if(dist < 50 && time > 10){
+L.circleMarker([curr.lat,curr.lng],{
+  radius:5,
+  color:"orange",
+  fillOpacity:0.9
+}).addTo(routeLayer)
+  .bindPopup("Stop<br>"+curr.time.toLocaleString());
+
+}
+}
+
+  }
+
+}
 }
 
 function buildTimeline(points){
