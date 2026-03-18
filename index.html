@@ -4,95 +4,99 @@
 <meta charset="utf-8">
 <title>GPS Playback</title>
 
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 
 <style>
-body { margin:0; font-family:Arial; }
-
-#controls {
-  padding:10px;
-  background:#eee;
+body{
+margin:0;
+font-family:Arial;
+background:#000;
+color:#fff;
 }
 
-#map {
-  height:500px;
+#map{
+height:100vh;
 }
 </style>
 </head>
 
 <body>
 
-<div id="controls">
-<label>Day:</label>
-<select id="daySelect"></select>
-</div>
-
 <div id="map"></div>
 
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
 <script>
 
-// MAP
-let map = L.map('map').setView([53.5, -105.5], 6);
+let map = L.map('map').setView([53,-105],6)
 
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-  maxZoom: 19
-}).addTo(map);
+L.tileLayer(
+'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+{maxZoom:19}
+).addTo(map)
 
-// LAYER
-let routeLayer = L.layerGroup().addTo(map);
+let routeLayer = L.layerGroup().addTo(map)
 
-// SIMPLE DATA
-let data = {
-  days: {
-    "2026-01-01": [
-      {lat: 53.212, lng: -105.743, time: new Date()},
-      {lat: 53.230, lng: -105.700, time: new Date()},
-      {lat: 53.250, lng: -105.640, time: new Date()}
-    ]
-  }
-};
-
-// DROPDOWN
-let daySelect = document.getElementById("daySelect");
-
-Object.keys(data.days).forEach(day => {
-  let opt = document.createElement("option");
-  opt.value = day;
-  opt.text = day;
-  daySelect.appendChild(opt);
-});
-
-// LOAD DAY
-function loadDay(day){
-
-  routeLayer.clearLayers();
-
-  let points = data.days[day];
-  if(!points) return;
-
-  let latlngs = points.map(p => [p.lat, p.lng]);
-
-  let route = L.polyline(latlngs, {color:"blue"}).addTo(routeLayer);
-
-  points.forEach(p => {
-    L.circleMarker([p.lat, p.lng], {
-      radius:6,
-      color:"orange"
-    })
-    .addTo(routeLayer)
-    .bindPopup("Stop<br>" + p.time.toLocaleTimeString());
-  });
-
-  map.fitBounds(route.getBounds());
+function clearMap(){
+routeLayer.clearLayers()
 }
 
-// EVENT
-daySelect.onchange = () => loadDay(daySelect.value);
+function addPoint(lat, lng, time, type){
 
-// START
-loadDay(Object.keys(data.days)[0]);
+let marker = L.circleMarker([lat, lng], {
+radius: type === "visit" ? 6 : 3,
+color: type === "visit" ? "orange" : "#00ffff"
+}).addTo(routeLayer)
+
+marker.bindPopup(
+type + "<br>" + new Date(time).toLocaleString()
+)
+
+return [lat, lng]
+}
+
+function loadData(data){
+
+clearMap()
+
+let points = []
+
+data.forEach(item => {
+
+if(item.activity){
+
+let start = item.activity.start.replace("geo:","").split(",")
+let end = item.activity.end.replace("geo:","").split(",")
+
+points.push(addPoint(start[0], start[1], item.startTime, "move"))
+points.push(addPoint(end[0], end[1], item.endTime, "move"))
+
+}
+
+if(item.visit){
+
+let loc = item.visit.topCandidate.placeLocation
+.replace("geo:","")
+.split(",")
+
+points.push(addPoint(loc[0], loc[1], item.startTime, "visit"))
+
+}
+
+})
+
+if(points.length > 1){
+let line = L.polyline(points, {color:"blue"}).addTo(routeLayer)
+map.fitBounds(line.getBounds())
+}
+
+}
+
+fetch("location-history.json")
+.then(res => res.json())
+.then(data => {
+loadData(data)
+})
 
 </script>
 
