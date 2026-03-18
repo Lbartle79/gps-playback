@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>GPS Timeline Viewer</title>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+
+<style>
+body{
+margin:0;
+font-family:Arial;
+background:#000;
+color:#fff;
+}
+
+#map{
+height:50vh;
+}
+
+#timeline{
+height:50vh;
+overflow:auto;
+padding:10px;
+background:#111;
+}
+
+.day{
+color:#7cc7ff;
+margin-top:15px;
+font-weight:bold;
+cursor:pointer;
+}
+
+.entry{
+padding:4px;
+cursor:pointer;
+}
+
+.entry:hover{
+background:#222;
+}
+</style>
+</head>
+
+<body>
+
+<div id="map"></div>
+<div id="timeline"></div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+
+// MAP
+let map = L.map('map').setView([53,-105],5);
+
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+maxZoom:19
+}).addTo(map);
+
+// STORAGE
+let allPoints = [];
+let markers = [];
+let dots = [];
+let routeLine = null;
+
+// CLEAR MAP
+function clearMap(){
+markers.forEach(m=>map.removeLayer(m));
+dots.forEach(d=>map.removeLayer(d));
+markers=[];
+dots=[];
+if(routeLine) map.removeLayer(routeLine);
+}
+
+// TIME FORMAT
+function formatTime(t){
+return new Date(t).toLocaleTimeString("en-CA",{
+timeZone:"America/Regina",
+hour:"numeric",
+minute:"2-digit",
+hour12:true
+});
+}
+
+// ADD POINT
+function addPoint(time,lat,lon,type){
+let d = new Date(time);
+let day = d.toISOString().split("T")[0];
+
+allPoints.push({
+time:d,
+lat:parseFloat(lat),
+lon:parseFloat(lon),
+type:type,
+date:day
+});
+}
+
+// MARKER
+function addMarker(p){
+let m = L.marker([p.lat,p.lon]).addTo(map);
+
+m.bindPopup(
+formatTime(p.time)+"<br>"+p.lat+","+p.lon
+);
+
+markers.push(m);
+}
+
+// DOT
+function addDot(p){
+let d = L.circleMarker([p.lat,p.lon],{
+radius:3,
+color:"#00ffff"
+}).addTo(map);
+
+dots.push(d);
+}
+
+// SHOW DAY
+function showDay(day){
+
+clearMap();
+
+let pts = allPoints.filter(p=>p.date===day);
+
+pts.sort((a,b)=>a.time-b.time);
+
+let route=[];
+
+pts.forEach(p=>{
+
+route.push([p.lat,p.lon]);
+
+if(p.type==="breadcrumb"){
+addDot(p);
+}else{
+addMarker(p);
+}
+
+});
+
+if(route.length>1){
+routeLine = L.polyline(route,{color:"blue"}).addTo(map);
+map.fitBounds(routeLine.getBounds());
+}
+
+}
+
+// BUILD TIMELINE
+function buildTimeline(){
+
+let timeline = document.getElementById("timeline");
+timeline.innerHTML = "";
+
+let days = {};
+
+allPoints.forEach(p=>{
+if(!days[p.date]) days[p.date]=[];
+days[p.date].push(p);
+});
+
+Object.keys(days).sort().forEach(day=>{
+
+let h = document.createElement("div");
+h.className="day";
+h.textContent=day;
+h.onclick=()=>showDay(day);
+timeline.appendChild(h);
+
+days[day].sort((a,b)=>a.time-b.time);
+
+days[day].forEach(p=>{
+
+let e = document.createElement("div");
+e.className="entry";
+
+e.textContent =
+formatTime(p.time)+" — "+p.type;
+
+e.onclick=()=>{
+map.setView([p.lat,p.lon],14);
+};
+
+timeline.appendChild(e);
+
+});
+
+});
+
+}
+
+// LOAD DATA
+fetch("location-history.json")
+.then(r=>r.json())
+.then(data=>{
+
+data.forEach(item=>{
+
+// MOVEMENT
+if(item.activity){
+let s=item.activity.start.replace("geo:","").split(",");
+let e=item.activity.end.replace("geo:","").split(",");
+
+addPoint(item.startTime,s[0],s[1],"movement");
+addPoint(item.endTime,e[0],e[1],"movement");
+}
+
+// VISIT
+if(item.visit){
+let c=item.visit.topCandidate.placeLocation
+.replace("geo:","")
+.split(",");
+
+addPoint(item.startTime,c[0],c[1],"visit");
+}
+
+// PATH
+if(item.timelinePath){
+item.timelinePath.forEach(p=>{
+let c=p.point.replace("geo:","").split(",");
+addPoint(item.startTime,c[0],c[1],"breadcrumb");
+});
+}
+
+});
+
+buildTimeline();
+
+});
+
+</script>
+
+</body>
+</html>
