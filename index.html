@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="utf-8">
-<title>GPS Map</title>
+<title>GPS Playback</title>
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 
@@ -33,67 +33,65 @@ body { margin:0; font-family:Arial; }
 
 <script>
 
-// Create map
+// MAP
 let map = L.map('map').setView([53.5, -105.5], 6);
 
-// Load tiles
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   maxZoom: 19
 }).addTo(map);
 
-// Layer for routes
+// LAYER
 let routeLayer = L.layerGroup().addTo(map);
 
-let routeLayer = L.layerGroup().addTo(map);
-
+// DATA (SAFE)
 let data = {
   days: {
     "2026-01-01": [
-      {lat:53.212,lng:-105.743,time:new Date()},
-      {lat:53.230,lng:-105.700,time:new Date()},
-      {lat:53.250,lng:-105.640,time:new Date()}
+      {lat: 53.212, lng: -105.743, time: new Date()},
+      {lat: 53.230, lng: -105.700, time: new Date()},
+      {lat: 53.250, lng: -105.640, time: new Date()}
     ]
   }
 };
 
-// Build dropdown
+// DROPDOWN
 let daySelect = document.getElementById("daySelect");
-console.log(data);
-for(let d in data.days){
-  let opt = document.createElement("option");
-  opt.value = d;
-  opt.text = d;
-  daySelect.appendChild(opt);
-}
 
-// Load a day
+Object.keys(data.days).forEach(day => {
+  let opt = document.createElement("option");
+  opt.value = day;
+  opt.text = day;
+  daySelect.appendChild(opt);
+});
+
+// LOAD DAY
 function loadDay(day){
 
   routeLayer.clearLayers();
 
   let points = data.days[day];
-  if(!points || points.length === 0) return;
+  if(!points) return;
 
   let latlngs = points.map(p => [p.lat, p.lng]);
 
-  let route = L.polyline(latlngs,{color:"blue"}).addTo(routeLayer);
+  let route = L.polyline(latlngs, {color:"blue"}).addTo(routeLayer);
 
-  points.forEach(p=>{
-    L.circleMarker([p.lat,p.lng],{
+  points.forEach(p => {
+    L.circleMarker([p.lat, p.lng], {
       radius:6,
       color:"orange"
     })
     .addTo(routeLayer)
-    .bindPopup("Stop<br>"+p.time.toLocaleTimeString());
+    .bindPopup("Stop<br>" + p.time.toLocaleTimeString());
   });
 
   map.fitBounds(route.getBounds());
 }
 
-// Dropdown change
+// EVENTS
 daySelect.onchange = () => loadDay(daySelect.value);
 
-// Load first day
+// INIT
 loadDay(Object.keys(data.days)[0]);
 
 </script>
