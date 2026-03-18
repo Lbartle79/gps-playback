@@ -33,7 +33,7 @@ body { margin:0; font-family:Arial; }
 
 <script>
 
-// MAP SETUP
+// MAP
 let map = L.map('map').setView([53.5, -105.5], 6);
 
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -43,7 +43,7 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 // LAYER
 let routeLayer = L.layerGroup().addTo(map);
 
-// DATA (you can replace later)
+// SIMPLE DATA
 let data = {
   days: {
     "2026-01-01": [
@@ -53,17 +53,6 @@ let data = {
     ]
   }
 };
-
-// ADDRESS FUNCTION
-async function getAddress(lat, lng){
-  try {
-    let r = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`);
-    let data = await r.json();
-    return data.display_name || "Address unavailable";
-  } catch(e){
-    return "Address unavailable";
-  }
-}
 
 // DROPDOWN
 let daySelect = document.getElementById("daySelect");
@@ -88,20 +77,12 @@ function loadDay(day){
   let route = L.polyline(latlngs, {color:"blue"}).addTo(routeLayer);
 
   points.forEach(p => {
-
-    let marker = L.circleMarker([p.lat, p.lng], {
+    L.circleMarker([p.lat, p.lng], {
       radius:6,
       color:"orange"
-    }).addTo(routeLayer);
-
-    getAddress(p.lat, p.lng).then(addr => {
-      marker.bindPopup(
-        "Stop<br>" +
-        p.time.toLocaleTimeString() + "<br>" +
-        addr
-      );
-    });
-
+    })
+    .addTo(routeLayer)
+    .bindPopup("Stop<br>" + p.time.toLocaleTimeString());
   });
 
   map.fitBounds(route.getBounds());
