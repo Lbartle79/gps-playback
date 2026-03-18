@@ -45,7 +45,7 @@ let timer = null;
 
 async function loadTimeline(){
 
-const response = await fetch("location_history_raw_dump.csv");
+const response = await fetch("./location_history_raw_dump.csv")
 const text = await response.text();
 
 let points = [];
