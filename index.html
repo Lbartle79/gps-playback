@@ -1,19 +1,23 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta charset="utf-8" />
-<title>GPS Playback</title>
+<meta charset="utf-8">
+<title>GPS Map</title>
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 
 <style>
-body { margin:0; font-family: Arial; }
-#controls { padding:10px; background:#f4f4f4; }
-#map{
+body { margin:0; font-family:Arial; }
+
+#controls {
+  padding:10px;
+  background:#eee;
+}
+
+#map {
   height:500px;
 }
 </style>
-
 </head>
 
 <body>
@@ -21,229 +25,75 @@ body { margin:0; font-family: Arial; }
 <div id="controls">
 <label>Day:</label>
 <select id="daySelect"></select>
-<button onclick="play()">Play</button>
-<button onclick="pause()">Pause</button>
-<label>Speed</label>
-<input type="range" id="speed" min="1" max="20" value="5">
 </div>
 
 <div id="map"></div>
-<div id="timeline" style="height:200px; overflow:auto; background:#ffffff; border-top:1px solid #ccc; font-family:Arial; font-size:14px; padding:10px;"></div>
+
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
-let map = L.map('map').setView([53.2,-105.7],6);
 
-L.tileLayer(
-'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-{maxZoom:19}
-).addTo(map);
+// Create map
+let map = L.map('map').setView([53.5, -105.5], 6);
 
+// Load tiles
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  maxZoom: 19
+}).addTo(map);
+
+// Layer for routes
 let routeLayer = L.layerGroup().addTo(map);
-let marker = null;
-let currentPoints = [];
-let index = 0;
-let timer = null;
 
-async function loadTimeline(){
-
-const response = await fetch("./location_history_raw_dump.csv")
-const text = await response.text();
-
-let points = [];
-
-text.split("\n").forEach(line => {
-
-let geo = line.match(/geo:([0-9.-]+),([0-9.-]+)/);
-let time = line.match(/startTime': '([^']+)/);
-
-if(geo && time){
-
-points.push({
-lat:parseFloat(geo[1]),
-lng:parseFloat(geo[2]),
-time:new Date(time[1])
-});
-
-}
-
-});
-
-buildDays(points);
-
-}
-
-function buildDays(points){
-
-let days = {};
-
-points.forEach(p => {
-
-let day = p.time.toISOString().slice(0,10);
-
-if(!days[day]) days[day] = [];
-
-days[day].push(p);
-
-});
-
-let select = document.getElementById("daySelect");
-
-Object.keys(days).sort().forEach(day => {
-
-let opt = document.createElement("option");
-opt.value = day;
-opt.text = day;
-
-select.appendChild(opt);
-
-});
-
-select.addEventListener("change", () => loadDay(days[select.value]));
-
-loadDay(days[Object.keys(days)[0]]);
-
-}
-
-function loadDay(points){
-
-routeLayer.clearLayers();
-
-currentPoints = points;
-index = 0;
-
-let latlngs = points.map(p => [p.lat,p.lng]);
-
-let route = L.polyline(latlngs,{color:"blue"}).addTo(routeLayer);
-
-let start = latlngs[0];
-let end = latlngs[latlngs.length-1];
-L.marker(start,{title:"Start of Day"}).addTo(routeLayer);
-L.marker(end,{title:"End of Day"}).addTo(routeLayer);
-
-
-marker = L.circleMarker(start,{
-radius:6,
-color:"red"
-}).addTo(routeLayer);
-
-map.fitBounds(route.getBounds());
-map.setZoom(12);
-buildTimeline(points);
-for(let i=1;i<points.length;i++){
-
-  let prev = points[i-1];
-  let curr = points[i];
-
-  let dist = map.distance([prev.lat,prev.lng],[curr.lat,curr.lng]);
-  let time = (curr.time - prev.time)/60000;
-
-  if(dist < 50 && time > 10){
-L.circleMarker([curr.lat,curr.lng],{
-  radius:5,
-  color:"orange",
-  fillOpacity:0.9
-}).addTo(routeLayer)
-  .bindPopup("Stop<br>"+curr.time.toLocaleString());
-
-}
-}
-
+// TEST DATA (just to prove map works)
+let data = {
+  days: {
+    "2026-01-01": [
+      {lat:53.212,lng:-105.743,time:new Date()},
+      {lat:53.230,lng:-105.700,time:new Date()},
+      {lat:53.250,lng:-105.640,time:new Date()}
+    ]
   }
+};
 
-}
-}
+// Build dropdown
+let daySelect = document.getElementById("daySelect");
 
-function buildTimeline(points){
-
-let timeline = document.getElementById("timeline");
-
-if(!timeline) return;
-
-timeline.innerHTML = "";
-
-points.forEach((p,i) => {
-
-let row = document.createElement("div");
-row.innerText =
-"STOP\n"+
-p.time.toLocaleTimeString()+"\n"+
-p.lat.toFixed(5)+", "+p.lng.toFixed(5);
-
-getAddress(p.lat,p.lng).then(addr=>{
-  row.innerText =
-  "STOP\n"+
-  p.time.toLocaleTimeString()+"\n"+
-  addr+"\n"+
-  p.lat.toFixed(5)+","+p.lng.toFixed(5);
-});
-row.style.cursor="pointer";
-row.style.padding="4px";
-
-row.onclick = () => jumpTo(i);
-
-timeline.appendChild(row);
-
-});
-
+for(let d in data.days){
+  let opt = document.createElement("option");
+  opt.value = d;
+  opt.text = d;
+  daySelect.appendChild(opt);
 }
 
-function jumpTo(i){
+// Load a day
+function loadDay(day){
 
-let p = currentPoints[i];
+  routeLayer.clearLayers();
 
-marker.setLatLng([p.lat,p.lng]);
+  let points = data.days[day];
+  if(!points || points.length === 0) return;
 
-map.setView([p.lat,p.lng],14);
-L.circleMarker([p.lat,p.lng],{
-  radius:7,
-  color:"yellow",
-  fillOpacity:0.9
-}).addTo(routeLayer);
+  let latlngs = points.map(p => [p.lat, p.lng]);
 
-}
-async function getAddress(lat,lng){
+  let route = L.polyline(latlngs,{color:"blue"}).addTo(routeLayer);
 
-  try{
-    const r = await fetch(
-      "https://nominatim.openstreetmap.org/reverse?format=json&lat="+lat+"&lon="+lng
-    );
+  points.forEach(p=>{
+    L.circleMarker([p.lat,p.lng],{
+      radius:6,
+      color:"orange"
+    })
+    .addTo(routeLayer)
+    .bindPopup("Stop<br>"+p.time.toLocaleTimeString());
+  });
 
-    const data = await r.json();
-
-    if(data.display_name)
-      return data.display_name;
-
-  }catch(e){}
-
-  return "Address unavailable";
-
-}
-function play(){
-
-clearInterval(timer);
-
-timer = setInterval(()=>{
-
-if(index>=currentPoints.length) return;
-
-let p = currentPoints[index];
-
-marker.setLatLng([p.lat,p.lng]);
-
-index++;
-
-},1000);
-
+  map.fitBounds(route.getBounds());
 }
 
-function pause(){
+// Dropdown change
+daySelect.onchange = () => loadDay(daySelect.value);
 
-clearInterval(timer);
-
-}
-
-loadTimeline();
+// Load first day
+loadDay(Object.keys(data.days)[0]);
 
 </script>
 
