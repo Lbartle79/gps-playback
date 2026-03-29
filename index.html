@@ -37,4 +37,19 @@ var stops = [
 
 var bounds = [];
 
-stops.forEach((
+stops.forEach((p, i) => {
+  L.circleMarker([p.lat, p.lng], {
+    radius: 6,
+    color: "orange"
+  }).addTo(map)
+  .bindPopup("Stop " + (i+1));
+
+  bounds.push([p.lat, p.lng]);
+});
+
+map.fitBounds(bounds);
+
+</script>
+
+</body>
+</html>
