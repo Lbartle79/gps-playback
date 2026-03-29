@@ -26,15 +26,17 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   maxZoom: 19
 }).addTo(map);
 
+// ✅ YOUR FULL STOPS WITH ADDRESSES
 var stops = [
-  {lat:52.866673, lng:-104.594767},
-  {lat:52.860067, lng:-104.612083},
-  {lat:52.860062, lng:-104.600967},
-  {lat:52.860195, lng:-104.602300},
-  {lat:52.855452, lng:-104.590250},
-  {lat:52.851177, lng:-104.586283}
+  {lat:52.866673, lng:-104.594767, addr:"McLeod Ave & Main St"},
+  {lat:52.860067, lng:-104.612083, addr:"Burrows Ave area"},
+  {lat:52.860062, lng:-104.600967, addr:"Downtown Melfort"},
+  {lat:52.860195, lng:-104.602300, addr:"Near Post Office"},
+  {lat:52.855452, lng:-104.590250, addr:"South Melfort residential"},
+  {lat:52.851177, lng:-104.586283, addr:"Near golf course"}
 ];
 
+// 🔵 Draw markers with addresses
 var bounds = [];
 
 stops.forEach((p, i) => {
@@ -42,11 +44,12 @@ stops.forEach((p, i) => {
     radius: 6,
     color: "orange"
   }).addTo(map)
-  .bindPopup("Stop " + (i+1));
+  .bindPopup("<b>Stop " + (i+1) + "</b><br>" + p.addr);
 
   bounds.push([p.lat, p.lng]);
 });
 
+// 🔍 Auto zoom
 map.fitBounds(bounds);
 
 </script>
