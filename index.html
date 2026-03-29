@@ -1,15 +1,15 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="utf-8">
-  <title>My Stops Map</title>
+<meta charset="utf-8">
+<title>Full Stops Map</title>
 
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 
-  <style>
-    body { margin:0; }
-    #map { height:100vh; }
-  </style>
+<style>
+body { margin:0; }
+#map { height:100vh; }
+</style>
 </head>
 
 <body>
@@ -26,30 +26,45 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   maxZoom: 19
 }).addTo(map);
 
-// ✅ YOUR FULL STOPS WITH ADDRESSES
+// 🔥 FULL CLEANED DATA (sample chunk — scalable)
 var stops = [
-  {lat:52.866673, lng:-104.594767, addr:"McLeod Ave & Main St"},
-  {lat:52.860067, lng:-104.612083, addr:"Burrows Ave area"},
-  {lat:52.860062, lng:-104.600967, addr:"Downtown Melfort"},
-  {lat:52.860195, lng:-104.602300, addr:"Near Post Office"},
-  {lat:52.855452, lng:-104.590250, addr:"South Melfort residential"},
-  {lat:52.851177, lng:-104.586283, addr:"Near golf course"}
+  {lat:52.866673, lng:-104.594767},
+  {lat:52.860067, lng:-104.612083},
+  {lat:52.860062, lng:-104.600967},
+  {lat:52.860195, lng:-104.602300},
+  {lat:52.866557, lng:-104.594767},
+  {lat:52.855452, lng:-104.590250},
+  {lat:52.851177, lng:-104.586283},
+  {lat:52.856895, lng:-104.597433},
+  {lat:52.859893, lng:-104.601088},
+  {lat:52.859843, lng:-104.600950},
+  {lat:52.859795, lng:-104.600945},
+  {lat:52.859767, lng:-104.601053},
+  {lat:52.859988, lng:-104.601015},
+  {lat:52.859835, lng:-104.600825},
+  {lat:52.860102, lng:-104.601050},
+  {lat:52.859920, lng:-104.600782},
+  {lat:52.859945, lng:-104.601150},
+  {lat:52.859825, lng:-104.601083},
+  {lat:52.859747, lng:-104.600917},
+  {lat:52.859840, lng:-104.601133},
+  {lat:52.860040, lng:-104.601000},
+  {lat:52.859843, lng:-104.600933},
+  {lat:52.859912, lng:-104.601033}
 ];
 
-// 🔵 Draw markers with addresses
 var bounds = [];
 
 stops.forEach((p, i) => {
   L.circleMarker([p.lat, p.lng], {
-    radius: 6,
+    radius: 4,
     color: "orange"
   }).addTo(map)
-  .bindPopup("<b>Stop " + (i+1) + "</b><br>" + p.addr);
+  .bindPopup("Lat: " + p.lat + "<br>Lng: " + p.lng);
 
   bounds.push([p.lat, p.lng]);
 });
 
-// 🔍 Auto zoom
 map.fitBounds(bounds);
 
 </script>
