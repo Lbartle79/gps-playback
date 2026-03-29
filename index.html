@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="utf-8">
-<title>FULL GPS MAP</title>
+<title>GPS MAP</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <style>
 body { margin:0; }
@@ -23,50 +23,45 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
 maxZoom:22
 }).addTo(map);
 
-// 🔥 LOAD YOUR FILE
 fetch('text.txt')
 .then(r => r.text())
 .then(raw => {
 
-  // 🔥 MUCH STRONGER MATCH (THIS WAS THE ISSUE)
-  let matches = raw.match(/-?\d+\.\d+/g);
+  // 🔥 CORRECT MATCH (this is the fix)
+  let regex = /Latitude[:\s]*(-?\d+\.\d+)[^\d-]+Longitude[:\s]*(-?\d+\.\d+)/gi;
 
-  if(!matches || matches.length < 2){
-    alert("No data found in file");
-    return;
-  }
-
+  let match;
   let bounds = [];
   let count = 0;
 
-  for(let i=0; i<matches.length; i+=2){
+  while((match = regex.exec(raw)) !== null){
 
-    let lat = parseFloat(matches[i]);
-    let lng = parseFloat(matches[i+1]);
+    let lat = parseFloat(match[1]);
+    let lng = parseFloat(match[2]);
 
-    if(isNaN(lat) || isNaN(lng)) continue;
+    if(lat < -90 || lat > 90) continue;
+    if(lng < -180 || lng > 180) continue;
 
-    let marker = L.circleMarker([lat,lng],{
+    L.circleMarker([lat,lng],{
       radius:6,
       color:"#0066ff",
       fillColor:"#3399ff",
       fillOpacity:0.9
     }).addTo(map);
 
-    marker.bindPopup("Stop " + (++count));
-
     bounds.push([lat,lng]);
+    count++;
   }
 
   if(bounds.length > 0){
     map.fitBounds(bounds);
   } else {
-    alert("Still no valid coordinates found");
+    alert("No valid coordinates found");
   }
 
 })
 .catch(err=>{
-  alert("Could not load text.txt file");
+  alert("Could not load text.txt");
   console.error(err);
 });
 
