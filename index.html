@@ -1,104 +1,40 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta charset="utf-8">
-<title>GPS Playback</title>
+  <meta charset="utf-8">
+  <title>My Stops Map</title>
 
-<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 
-<style>
-body{
-margin:0;
-font-family:Arial;
-background:#000;
-color:#fff;
-}
-
-#map{
-height:100vh;
-}
-</style>
+  <style>
+    body { margin:0; }
+    #map { height:100vh; }
+  </style>
 </head>
 
 <body>
 
 <div id="map"></div>
 
-<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
 
-let map = L.map('map').setView([53,-105],6)
+var map = L.map('map').setView([52.8599, -104.6010], 13);
 
-L.tileLayer(
-'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-{maxZoom:19}
-).addTo(map)
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  maxZoom: 19
+}).addTo(map);
 
-let routeLayer = L.layerGroup().addTo(map)
+var stops = [
+  {lat:52.866673, lng:-104.594767},
+  {lat:52.860067, lng:-104.612083},
+  {lat:52.860062, lng:-104.600967},
+  {lat:52.860195, lng:-104.602300},
+  {lat:52.855452, lng:-104.590250},
+  {lat:52.851177, lng:-104.586283}
+];
 
-function clearMap(){
-routeLayer.clearLayers()
-}
+var bounds = [];
 
-function addPoint(lat, lng, time, type){
-
-let marker = L.circleMarker([lat, lng], {
-radius: type === "visit" ? 6 : 3,
-color: type === "visit" ? "orange" : "#00ffff"
-}).addTo(routeLayer)
-
-marker.bindPopup(
-type + "<br>" + new Date(time).toLocaleString()
-)
-
-return [lat, lng]
-}
-
-function loadData(data){
-
-clearMap()
-
-let points = []
-
-data.forEach(item => {
-
-if(item.activity){
-
-let start = item.activity.start.replace("geo:","").split(",")
-let end = item.activity.end.replace("geo:","").split(",")
-
-points.push(addPoint(start[0], start[1], item.startTime, "move"))
-points.push(addPoint(end[0], end[1], item.endTime, "move"))
-
-}
-
-if(item.visit){
-
-let loc = item.visit.topCandidate.placeLocation
-.replace("geo:","")
-.split(",")
-
-points.push(addPoint(loc[0], loc[1], item.startTime, "visit"))
-
-}
-
-})
-
-if(points.length > 1){
-let line = L.polyline(points, {color:"blue"}).addTo(routeLayer)
-map.fitBounds(line.getBounds())
-}
-
-}
-
-fetch("location-history.json")
-.then(res => res.json())
-.then(data => {
-loadData(data)
-})
-
-</script>
-
-</body>
-</html>
+stops.forEach((
