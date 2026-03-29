@@ -2,81 +2,62 @@
 <html>
 <head>
 <meta charset="utf-8">
-<title>GPS MAP (TIMELINE + CLUSTERS)</title>
+<title>GPS MAP (FULL WORKING)</title>
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css"/>
-<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css"/>
 
 <style>
 body { margin:0; }
-#map { height:90vh; }
-#controls {
-  height:10vh;
-  background:#111;
-  color:white;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-}
-button {
-  padding:10px 20px;
-  font-size:16px;
-}
+#map { height:100vh; }
 </style>
 </head>
 <body>
 
 <div id="map"></div>
-<div id="controls">
-  <button onclick="startPlayback()">▶ Play Timeline</button>
-</div>
 
+<!-- Leaflet -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+
+<!-- YOUR DATA FILE -->
+<script src="data.js"></script>
 
 <script>
 
+// CREATE MAP
 var map = L.map('map').setView([52.8599,-104.6010],14);
 
+// MAP TILES
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
   maxZoom:22
 }).addTo(map);
 
-// CLUSTER GROUP
-var cluster = L.markerClusterGroup();
-map.addLayer(cluster);
+// SAFETY CHECK
+if (typeof stops === "undefined") {
+  alert("data.js is not loading!");
+}
 
-let timelinePoints = [];
-let playbackIndex = 0;
-let playbackMarker;
+// DRAW POINTS (NO LINES)
+var bounds = [];
 
-// LOAD DATA
-fetch('data.json')
-.then(res => res.json())
-.then(data => {
+stops.forEach((p,i)=>{
+  let coords = [p.lat, p.lng];
 
-  // SORT BY TIME
-  data.points.sort((a,b)=> new Date(a.time) - new Date(b.time));
+  L.circleMarker(coords,{
+    radius:3,
+    color:"#0066ff",
+    fillColor:"#3399ff",
+    fillOpacity:0.8
+  }).addTo(map);
 
-  data.points.forEach((p)=>{
-
-    let coords = [p.lat, p.lng];
-
-    // CLUSTER POINT
-    let marker = L.circleMarker(coords,{
-      radius:4,
-      color:"#0066ff",
-      fillOpacity:0.7
-    }).bindPopup(p.time);
-
-    cluster.addLayer(marker);
-
-    timelinePoints.push(coords);
-  });
-
-  map.fitBounds(cluster.getBounds());
-
+  bounds.push(coords);
 });
 
-// PLAYBACK
+// AUTO ZOOM
+if (bounds.length > 0) {
+  map.fitBounds(bounds);
+}
+
+</script>
+
+</body>
+</html>
