@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="utf-8">
-<title>GPS Map</title>
+<title>Full GPS Map</title>
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 
@@ -17,32 +17,43 @@ body { margin:0; }
 <div id="map"></div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="data.js"></script>
 
 <script>
 
+// map
 var map = L.map('map').setView([52.8599, -104.6010], 13);
 
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   maxZoom: 19
 }).addTo(map);
 
+// 🔥 FULL DATA (PASTE YOUR FILE CONTENT BELOW)
+var raw = `PASTE YOUR TEXT FILE CONTENT HERE`;
+
+// extract ALL coordinates
+let regex = /Latitude:\s*(-?\d+\.\d+)\s*Longitude:\s*(-?\d+\.\d+)/g;
+
+let match;
 let bounds = [];
 
-stops.forEach((p, i) => {
+while ((match = regex.exec(raw)) !== null) {
 
-  L.circleMarker([p.lat, p.lng], {
-    radius: 5,
+  let lat = parseFloat(match[1]);
+  let lng = parseFloat(match[2]);
+
+  L.circleMarker([lat, lng], {
+    radius: 3,
     color: "orange"
-  }).addTo(map)
-  .bindPopup("Stop " + (i+1));
+  }).addTo(map);
 
-  bounds.push([p.lat, p.lng]);
+  bounds.push([lat, lng]);
+}
 
-});
-
+// zoom to all points
 if(bounds.length > 0){
   map.fitBounds(bounds);
+} else {
+  alert("No data found");
 }
 
 </script>
