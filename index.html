@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="utf-8">
-<title>Full GPS Map</title>
+<title>GPS Map</title>
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 
@@ -17,6 +17,7 @@ body { margin:0; }
 <div id="map"></div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="data.js"></script>
 
 <script>
 
@@ -26,45 +27,23 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   maxZoom: 19
 }).addTo(map);
 
-var stops = [];
-var bounds = [];
+let bounds = [];
 
-// 🔥 LOAD YOUR REAL FILE
-fetch("Vehicle Report 2026-01-01 to 2026-01-01.pdf")
-.then(res => res.text())
-.then(text => {
+stops.forEach((p, i) => {
 
-  let matches = text.match(/Latitude:\s*(-?\d+\.\d+)\s*Longitude:\s*(-?\d+\.\d+)/g);
+  L.circleMarker([p.lat, p.lng], {
+    radius: 5,
+    color: "orange"
+  }).addTo(map)
+  .bindPopup("Stop " + (i+1));
 
-  if(!matches){
-    alert("No data found");
-    return;
-  }
+  bounds.push([p.lat, p.lng]);
 
-  matches.forEach((line, i) => {
-
-    let lat = parseFloat(line.match(/Latitude:\s*(-?\d+\.\d+)/)[1]);
-    let lng = parseFloat(line.match(/Longitude:\s*(-?\d+\.\d+)/)[1]);
-
-    L.circleMarker([lat, lng], {
-      radius: 4,
-      color: "orange"
-    }).addTo(map)
-    .bindPopup("Stop " + (i+1));
-
-    bounds.push([lat, lng]);
-
-  });
-
-  if(bounds.length > 0){
-    map.fitBounds(bounds);
-  }
-
-})
-.catch(err => {
-  console.log(err);
-  alert("File not loading — check filename");
 });
+
+if(bounds.length > 0){
+  map.fitBounds(bounds);
+}
 
 </script>
 
