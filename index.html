@@ -2,61 +2,51 @@
 <html>
 <head>
 <meta charset="utf-8">
-<title>Full GPS Map</title>
-
+<title>GPS Map</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-
 <style>
 body { margin:0; }
 #map { height:100vh; }
 </style>
 </head>
-
 <body>
-
 <div id="map"></div>
-
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
 <script>
-
-// map
+const raw = `
+Latitude:52.866673 Longitude:-104.594767
+Latitude:52.860067 Longitude:-104.612083
+Latitude:52.860062 Longitude:-104.600967
+Latitude:52.860195 Longitude:-104.602300
+Latitude:52.866557 Longitude:-104.594767
+Latitude:52.866612 Longitude:-104.594717
+Latitude:52.855452 Longitude:-104.590250
+Latitude:52.851177 Longitude:-104.586283
+Latitude:52.856895 Longitude:-104.597433
+Latitude:52.859893 Longitude:-104.601088
+Latitude:52.859843 Longitude:-104.600950
+Latitude:52.859795 Longitude:-104.600945
+Latitude:52.859767 Longitude:-104.601053
+Latitude:52.859988 Longitude:-104.601015
+Latitude:52.859835 Longitude:-104.600825
+Latitude:52.860102 Longitude:-104.601050
+`;
 var map = L.map('map').setView([52.8599, -104.6010], 13);
-
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-  maxZoom: 19
-}).addTo(map);
-
-// 🔥 FULL DATA (PASTE YOUR FILE CONTENT BELOW)
-var raw = `PASTE YOUR TEXT FILE CONTENT HERE`;
-
-// extract ALL coordinates
-let regex = /Latitude:\s*(-?\d+\.\d+)\s*Longitude:\s*(-?\d+\.\d+)/g;
-
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19}).addTo(map);
+let regex=/Latitude:\s*(-?\d+\.\d+)\s*Longitude:\s*(-?\d+\.\d+)/g;
 let match;
-let bounds = [];
-
-while ((match = regex.exec(raw)) !== null) {
-
-  let lat = parseFloat(match[1]);
-  let lng = parseFloat(match[2]);
-
-  L.circleMarker([lat, lng], {
-    radius: 3,
-    color: "orange"
-  }).addTo(map);
-
-  bounds.push([lat, lng]);
+let bounds=[];
+while((match=regex.exec(raw))!==null){
+let lat=parseFloat(match[1]);
+let lng=parseFloat(match[2]);
+L.circleMarker([lat,lng],{radius:5,color:"orange"}).addTo(map);
+bounds.push([lat,lng]);
 }
-
-// zoom to all points
-if(bounds.length > 0){
-  map.fitBounds(bounds);
-} else {
-  alert("No data found");
+if(bounds.length>0){
+map.fitBounds(bounds);
+}else{
+alert("No data found");
 }
-
 </script>
-
 </body>
 </html>
