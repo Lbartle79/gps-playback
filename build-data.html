@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>BUILD FULL DATA.JS</title>
+<style>
+body { font-family: sans-serif; padding:20px; }
+textarea { width:100%; height:200px; margin-bottom:10px; }
+button { padding:10px; font-size:16px; }
+</style>
+</head>
+<body>
+
+<h2>Paste ALL your raw GPS data below:</h2>
+<textarea id="input"></textarea>
+
+<button onclick="build()">BUILD FULL data.js</button>
+
+<h2>Output (copy this into data.js):</h2>
+<textarea id="output"></textarea>
+
+<script>
+function build() {
+  let text = document.getElementById("input").value;
+
+  let regex = /Latitude:\s*([0-9.-]+).*?Longitude:\s*([0-9.-]+)/g;
+  let match;
+
+  let points = [];
+
+  while ((match = regex.exec(text)) !== null) {
+    points.push(`{lat:${parseFloat(match[1])},lng:${parseFloat(match[2])}}`);
+  }
+
+  let result = "const stops = [\n" + points.join(",\n") + "\n];";
+
+  document.getElementById("output").value = result;
+}
+</script>
+
+</body>
+</html>
