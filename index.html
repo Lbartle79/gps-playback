@@ -2,74 +2,48 @@
 <html>
 <head>
 <meta charset="utf-8">
-<title>GPS Map</title>
-
+<title>FULL GPS MAP</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-
 <style>
 body { margin:0; }
 #map { height:100vh; }
 </style>
 </head>
-
 <body>
-
 <div id="map"></div>
-
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
 <script>
 
-// MAP (stronger zoom)
-var map = L.map('map', {
-  maxZoom: 22
-}).setView([52.8599,-104.6010], 17);
+// 🔥 PASTE YOUR FULL TEXT DATA HERE
+const raw = `PASTE YOUR ENTIRE TEXT FILE HERE`;
 
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-  maxZoom: 22
+// MAP
+var map = L.map('map',{maxZoom:22}).setView([52.8599,-104.6010],17);
+
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+  maxZoom:22
 }).addTo(map);
 
-// YOUR DATA (same as before)
-var stops = [
-[52.866673,-104.594767],
-[52.860067,-104.612083],
-[52.860062,-104.600967],
-[52.860195,-104.602300],
-[52.866557,-104.594767],
-[52.866612,-104.594717],
-[52.855452,-104.590250],
-[52.851177,-104.586283],
-[52.856895,-104.597433],
-[52.859893,-104.601088],
-[52.859843,-104.600950],
-[52.859795,-104.600945],
-[52.859767,-104.601053],
-[52.859988,-104.601015],
-[52.859835,-104.600825],
-[52.860102,-104.601050]
-];
+// EXTRACT EVERYTHING (no missing)
+let regex = /Latitude:\s*(-?\d+\.\d+)\s*Longitude:\s*(-?\d+\.\d+)/g;
 
-// DRAW BETTER MARKERS
-let bounds=[];
+let match;
+let count = 0;
 
-stops.forEach((p,i)=>{
+while((match = regex.exec(raw)) !== null){
 
-  let marker = L.circleMarker(p,{
-    radius: 8,              // bigger = easier to click
-    color: "#0066ff",       // blue instead of yellow
-    fillColor: "#3399ff",
-    fillOpacity: 0.9
-  }).addTo(map);
+  let lat = parseFloat(match[1]);
+  let lng = parseFloat(match[2]);
 
-  marker.bindPopup("Stop " + (i+1));
-
-  bounds.push(p);
-});
-
-// AUTO ZOOM
-map.fitBounds(bounds);
+  L.circleMarker([lat,lng],{
+    radius:6,
+    color:"#0066ff",
+    fillColor:"#3399ff",
+    fillOpacity:0.9
+  }).addTo(map)
+  .bindPopup("Stop " + (++count));
+}
 
 </script>
-
 </body>
 </html>
