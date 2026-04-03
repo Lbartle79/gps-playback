@@ -2,65 +2,44 @@
 <html>
 <head>
 <meta charset="utf-8">
-<title>GPS MAP (AUTO BUILD)</title>
-
+<title>GPS MAP</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-
 <style>
-body { margin:0; font-family:sans-serif; }
-#map { height:70vh; }
-#panel { padding:10px; }
-textarea { width:100%; height:150px; }
-button { width:100%; padding:10px; font-size:16px; margin-top:5px; }
+body { margin:0; }
+#map { height:100vh; }
 </style>
 </head>
 <body>
 
 <div id="map"></div>
 
-<div id="panel">
-  <textarea id="raw" placeholder="Paste ALL your GPS data here"></textarea>
-  <button onclick="loadData()">LOAD ALL DATA</button>
-</div>
-
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="data.js"></script>
 
 <script>
 
-var map = L.map('map').setView([52.8599,-104.6010],14);
+var map = L.map('map').setView([52.8599,-104.6010],13);
 
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
-  maxZoom:22
+maxZoom:22
 }).addTo(map);
 
-function loadData() {
+var bounds = [];
 
-  let text = document.getElementById("raw").value;
+stops.forEach(function(p,i){
+  L.circleMarker([p.lat, p.lng],{
+    radius:5,
+    color:"#0066ff",
+    fillColor:"#3399ff",
+    fillOpacity:0.9
+  }).addTo(map)
+  .bindPopup("Point "+(i+1));
 
-  let regex = /Latitude:\s*([0-9.-]+).*?Longitude:\s*([0-9.-]+)/g;
-  let match;
+  bounds.push([p.lat, p.lng]);
+});
 
-  let bounds = [];
-
-  while ((match = regex.exec(text)) !== null) {
-
-    let lat = parseFloat(match[1]);
-    let lng = parseFloat(match[2]);
-
-    let coords = [lat, lng];
-
-    L.circleMarker(coords,{
-      radius:3,
-      color:"#0066ff",
-      fillOpacity:0.7
-    }).addTo(map);
-
-    bounds.push(coords);
-  }
-
-  if(bounds.length){
-    map.fitBounds(bounds);
-  }
+if (bounds.length > 0) {
+  map.fitBounds(bounds);
 }
 
 </script>
