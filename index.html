@@ -7,7 +7,7 @@
   <!-- Leaflet -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 
-  <!-- Marker Cluster -->
+  <!-- Cluster -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css"/>
   <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.Default.css"/>
 
@@ -23,8 +23,11 @@
 <!-- Leaflet -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-<!-- Marker Cluster -->
+<!-- Cluster -->
 <script src="https://unpkg.com/leaflet.markercluster/dist/leaflet.markercluster.js"></script>
+
+<!-- YOUR DATA -->
+<script src="data.js"></script>
 
 <script>
   // Create map
@@ -32,69 +35,34 @@
 
   // Tile layer
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '&copy; OpenStreetMap contributors'
+    maxZoom: 19
   }).addTo(map);
 
-  // YOUR DATA
-  const stops = [
+  // Cluster group
+  var markers = L.markerClusterGroup({
+    spiderfyOnMaxZoom: true,
+    showCoverageOnHover: false,
+    zoomToBoundsOnClick: true,
+    maxClusterRadius: 40
+  });
 
-    {lat:52.859833,lng:-104.601075},
-    {lat:52.859842,lng:-104.601120},
-    {lat:52.859902,lng:-104.600998},
-    {lat:52.859928,lng:-104.601133},
-    {lat:52.859720,lng:-104.601145},
-    {lat:52.859640,lng:-104.601025},
-    {lat:52.860272,lng:-104.600568},
-    {lat:52.859998,lng:-104.601098},
-    {lat:52.859960,lng:-104.601137},
-    {lat:52.860585,lng:-104.600073},
+  // Add markers
+  stops.forEach(function(p, i) {
+    if (!p.lat || !p.lng) return;
 
-    {lat:52.866562,lng:-104.594767},
-    {lat:52.866580,lng:-104.594717},
-    {lat:52.866497,lng:-104.594683},
-    {lat:52.866672,lng:-104.594680},
-    {lat:52.866537,lng:-104.594817},
-    {lat:52.866618,lng:-104.594702},
-
-    {lat:52.853525,lng:-104.591030},
-    {lat:52.852857,lng:-104.590807},
-    {lat:52.853553,lng:-104.590650},
-
-    {lat:52.847718,lng:-104.592805},
-    {lat:52.847792,lng:-104.592892},
-
-    {lat:52.952210,lng:-105.029467},
-    {lat:52.952128,lng:-105.029267},
-
-    {lat:53.200598,lng:-105.776997},
-    {lat:53.200203,lng:-105.777028}
-
-  ];
-
-  // Create cluster group
-  var markers = L.markerClusterGroup();
-
-  // Add markers safely
-  for (let i = 0; i < stops.length; i++) {
-    let p = stops[i];
-
-    if (!p.lat || !p.lng) continue;
-
-    let marker = L.marker([p.lat, p.lng])
+    var marker = L.marker([p.lat, p.lng])
       .bindPopup("Point " + (i+1));
 
     markers.addLayer(marker);
-  }
+  });
 
-  // Add to map
   map.addLayer(markers);
 
-  // Fit map to points
+  // Fit bounds
   if (stops.length > 0) {
     var bounds = stops.map(p => [p.lat, p.lng]);
     map.fitBounds(bounds);
   }
-
 </script>
 
 </body>
