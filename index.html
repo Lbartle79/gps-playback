@@ -24,7 +24,9 @@ body { margin:0; }
 <script>
 
 // create map
-var map = L.map('map').setView([52.8599,-104.6010],13);
+var map = L.map('map', {
+  maxZoom:19
+}).setView([52.8599,-104.6010],13);
 
 // base layer
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
