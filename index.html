@@ -39,7 +39,7 @@ var markers = L.markerClusterGroup();
 console.log("Total points:", stops.length);
 stops.forEach(function(p,i){
   var marker = L.marker([p.lat, p.lng])
-    .bindPopup("Point " + (i+1));
+  .bindPopup("Point " + (i+1) + "<br>Total: " + stops.length);
 
   markers.addLayer(marker);
 });
