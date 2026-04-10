@@ -31,7 +31,9 @@
 
 <script>
   // Create map
-  var map = L.map('map').setView([52.86, -104.60], 10);
+var map = L.map('map', {
+  maxZoom: 20
+}).setView([52.86, -104.60], 13);
 
   // Tile layer
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
