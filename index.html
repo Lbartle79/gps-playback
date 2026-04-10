@@ -70,8 +70,6 @@ stops.forEach(function(p, i) {
     markers.addLayer(marker);
   });
 
-  map.addLayer(markers);
-
   // Fit bounds
   if (stops.length > 0) {
     var bounds = stops.map(p => [p.lat, p.lng]);
