@@ -55,8 +55,6 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     zoomToBoundsOnClick: true,
     maxClusterRadius: 20
   });
-
-  // Add markers
 // Add markers
 stops.forEach(function(p, i) {
   if (!p.lat || !p.lng) return;
@@ -66,9 +64,6 @@ stops.forEach(function(p, i) {
 
   markers.addLayer(marker);
 });
-
-    markers.addLayer(marker);
-  });
 
   // Fit bounds
   if (stops.length > 0) {
