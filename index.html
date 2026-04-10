@@ -15,6 +15,15 @@
     body { margin:0; }
     #map { height:100vh; }
   </style>
+  
+  .leaflet-popup-content {
+  font-size: 16px;
+  line-height: 1.4;
+}
+
+.leaflet-popup-content-wrapper {
+  padding: 10px;
+}
 </head>
 <body>
 
@@ -52,8 +61,7 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   stops.forEach(function(p, i) {
     if (!p.lat || !p.lng) return;
 
-    var marker = L.marker([p.lat, p.lng])
-      .bindPopup(
+    .bindPopup("Lat: " + p.lat + "<br>Lng: " + p.lng);
   "Start: " + p.start + "<br>" +
   "End: " + p.end + "<br>" +
   "Duration: " + p.duration
