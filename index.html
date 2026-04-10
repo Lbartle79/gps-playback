@@ -53,7 +53,11 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     if (!p.lat || !p.lng) return;
 
     var marker = L.marker([p.lat, p.lng])
-      .bindPopup("Point " + (i+1));
+      .bindPopup(
+  "Start: " + p.start + "<br>" +
+  "End: " + p.end + "<br>" +
+  "Duration: " + p.duration
+);
 
     markers.addLayer(marker);
   });
