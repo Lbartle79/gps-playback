@@ -79,7 +79,11 @@ map.addLayer(markers);
 // Fit bounds
 if (stops.length > 0) {
   var bounds = stops.map(p => [p.lat, p.lng]);
-  map.fitBounds(bounds);
+
+  map.fitBounds(bounds, {
+    padding: [150, 150],   // BIGGER SPACE
+    maxZoom: 14            // 👈 LIMIT how far it can zoom in
+  });
 }
 </script>
 
