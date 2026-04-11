@@ -73,13 +73,16 @@ stops.forEach(function(p, i) {
   if (!p.lat || !p.lng) return;
 
   var popupContent =
-    (p.start ? "Start: " + p.start + "<br>" : "") +
-    (p.end ? "End: " + p.end + "<br>" : "") +
-    (p.duration ? "Duration: " + p.duration + "<br>" : "") +
-    "Lat: " + p.lat + "<br>Lng: " + p.lng;
+  (p.start ? "START:<br>" + p.start + "<br><br>" : "") +
+  (p.end ? "END:<br>" + p.end + "<br><br>" : "") +
+  (p.duration ? "DURATION:<br>" + p.duration + "<br><br>" : "") +
+  "LAT:<br>" + p.lat + "<br><br>LNG:<br>" + p.lng;
 
   var marker = L.marker([p.lat, p.lng])
-    .bindPopup(popupContent);
+    .bindPopup(popupContent, {
+  maxWidth: 350,
+  minWidth: 250
+});
 
   markers.addLayer(marker);
 });
