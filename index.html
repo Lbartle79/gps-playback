@@ -89,12 +89,34 @@ var markers = L.markerClusterGroup({
 stops.forEach(function(p, i) {
   if (!p.lat || !p.lng) return;
 
-  var popupContent =
-  (p.start ? "START:<br>" + p.start + "<br><br>" : "") +
-  (p.end ? "END:<br>" + p.end + "<br><br>" : "") +
-  (p.duration ? "DURATION:<br>" + p.duration + "<br><br>" : "") +
-  "LAT:<br>" + p.lat + "<br><br>LNG:<br>" + p.lng;
+  var popupContent = `
+  <div class="popup-card">
+    <div class="popup-title">📍 Stop</div>
 
+    ${p.start ? `
+      <div class="popup-row">
+        <span class="popup-label">Start</span>
+        <span class="popup-value">${p.start}</span>
+      </div>` : ""}
+
+    ${p.end ? `
+      <div class="popup-row">
+        <span class="popup-label">End</span>
+        <span class="popup-value">${p.end}</span>
+      </div>` : ""}
+
+    ${p.duration ? `
+      <div class="popup-row">
+        <span class="popup-label">Duration</span>
+        <span class="popup-value">${p.duration}</span>
+      </div>` : ""}
+
+    <div class="popup-row">
+      <span class="popup-label">Location</span>
+      <span class="popup-value">${p.lat}, ${p.lng}</span>
+    </div>
+  </div>
+`;
   var marker = L.marker([p.lat, p.lng])
     .bindPopup(popupContent, {
   maxWidth: 350,
