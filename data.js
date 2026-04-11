@@ -78,7 +78,6 @@ const october = [
   // 👇 NEXT STEP
   // You will paste MORE October days here the SAME way
   // I’ll help you expand this cleanly
-];
 
 const october = [
 
