@@ -1,4 +1,9 @@
-const stops = [
+// =======================
+// OCTOBER DATASET
+// =======================
+const october = [
+
+  // --- October 30 ---
   {
     lat: 52.860132,
     lng: -104.600817,
@@ -69,4 +74,14 @@ const stops = [
     end: "2025-10-30 23:26",
     duration: "8 minutes"
   }
+
+  // 👇 NEXT STEP
+  // You will paste MORE October days here the SAME way
+  // I’ll help you expand this cleanly
 ];
+
+
+// =======================
+// ACTIVE DATASET (MAP USES THIS)
+// =======================
+const stops = october;
