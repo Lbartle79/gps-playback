@@ -74,7 +74,7 @@ const october = [
     end: "2025-10-30 23:26",
     duration: "8 minutes"
   }
-
+  ]
   // 👇 NEXT STEP
   // You will paste MORE October days here the SAME way
   // I’ll help you expand this cleanly
