@@ -14,14 +14,15 @@
   <style>
     body { margin:0; }
     #map { height:100vh; }
-      .leaflet-popup-content {
-  fonte-size: 16px;
-  line-height: 1.4;
-}
 
-.leaflet-popup-content-wrapper {
-  padding: 10px;
-}
+    .leaflet-popup-content {
+      font-size: 16px;
+      line-height: 1.4;
+    }
+
+    .leaflet-popup-content-wrapper {
+      padding: 10px;
+    }
   </style>
 </head>
 <body>
@@ -38,38 +39,48 @@
 <script src="data.js"></script>
 
 <script>
-  // Create map
+// Create map
 var map = L.map('map', {
   maxZoom: 20
-}).setView([52.86, -104.60], 15);
+}).setView([52.86, -104.60], 16);
 
-  // Tile layer
+// Tile layer
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   maxZoom: 20
 }).addTo(map);
 
-  // Cluster group
-  var markers = L.markerClusterGroup({
-    spiderfyOnMaxZoom: true,
-    showCoverageOnHover: false,
-    zoomToBoundsOnClick: true,
-    maxClusterRadius: 20
-  });
+// Cluster group
+var markers = L.markerClusterGroup({
+  spiderfyOnMaxZoom: true,
+  showCoverageOnHover: false,
+  zoomToBoundsOnClick: true,
+  maxClusterRadius: 15
+});
+
 // Add markers
 stops.forEach(function(p, i) {
   if (!p.lat || !p.lng) return;
 
+  var popupContent =
+    (p.start ? "Start: " + p.start + "<br>" : "") +
+    (p.end ? "End: " + p.end + "<br>" : "") +
+    (p.duration ? "Duration: " + p.duration + "<br>" : "") +
+    "Lat: " + p.lat + "<br>Lng: " + p.lng;
+
   var marker = L.marker([p.lat, p.lng])
-    .bindPopup("Lat: " + p.lat + "<br>Lng: " + p.lng);
+    .bindPopup(popupContent);
 
   markers.addLayer(marker);
 });
 
-  // Fit bounds
-  if (stops.length > 0) {
-    var bounds = stops.map(p => [p.lat, p.lng]);
-    map.fitBounds(bounds);
-  }
+// Add to map
+map.addLayer(markers);
+
+// Fit bounds
+if (stops.length > 0) {
+  var bounds = stops.map(p => [p.lat, p.lng]);
+  map.fitBounds(bounds);
+}
 </script>
 
 </body>
