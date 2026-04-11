@@ -77,14 +77,9 @@ stops.forEach(function(p, i) {
 map.addLayer(markers);
 
 // Fit bounds
-if (stops.length > 0) {
-  var bounds = stops.map(p => [p.lat, p.lng]);
-
-  map.fitBounds(bounds, {
-    padding: [150, 150],   // BIGGER SPACE
-    maxZoom: 13       // 👈 LIMIT how far it can zoom in
-  });
-}
+var map = L.map('map', {
+  maxZoom: 20
+}).setView([52.86, -104.60], 13);
 </script>
 
 </body>
