@@ -15,42 +15,42 @@
     body { margin:0; }
     #map { height:100vh; }
 
-.leaflet-popup-content-wrapper {
-  border-radius: 16px;
-  padding: 0;
-  overflow: hidden;
-}
+    .leaflet-popup-content-wrapper {
+      border-radius: 16px;
+      padding: 0;
+      overflow: hidden;
+    }
 
-.leaflet-popup-content {
-  margin: 0;
-  font-size: 18px;
-  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-}
+    .leaflet-popup-content {
+      margin: 0;
+      font-size: 18px;
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+    }
 
-.popup-card {
-  padding: 16px;
-}
+    .popup-card {
+      padding: 16px;
+    }
 
-.popup-title {
-  font-size: 20px;
-  font-weight: 700;
-  margin-bottom: 10px;
-}
+    .popup-title {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
 
-.popup-row {
-  margin-bottom: 8px;
-}
+    .popup-row {
+      margin-bottom: 8px;
+    }
 
-.popup-label {
-  font-weight: 600;
-  color: #555;
-}
+    .popup-label {
+      font-weight: 600;
+      color: #555;
+    }
 
-.popup-value {
-  display: block;
-  font-size: 18px;
-  margin-top: 2px;
-}
+    .popup-value {
+      display: block;
+      font-size: 18px;
+      margin-top: 2px;
+    }
   </style>
 </head>
 <body>
@@ -70,7 +70,7 @@
 // Create map
 var map = L.map('map', {
   maxZoom: 20
-}).setView([52.86, -104.60],16);
+}).setView([52.86, -104.60], 14);
 
 // Tile layer
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -86,53 +86,49 @@ var markers = L.markerClusterGroup({
 });
 
 // Add markers
-stops.forEach(function(p, i) {
+stops.forEach(function(p) {
   if (!p.lat || !p.lng) return;
 
   var popupContent = `
-  <div class="popup-card">
-    <div class="popup-title">📍 Stop</div>
+    <div class="popup-card">
+      <div class="popup-title">📍 Stop</div>
 
-    ${p.start ? `
+      ${p.start ? `
+        <div class="popup-row">
+          <span class="popup-label">Start</span>
+          <span class="popup-value">${p.start}</span>
+        </div>` : ""}
+
+      ${p.end ? `
+        <div class="popup-row">
+          <span class="popup-label">End</span>
+          <span class="popup-value">${p.end}</span>
+        </div>` : ""}
+
+      ${p.duration ? `
+        <div class="popup-row">
+          <span class="popup-label">Duration</span>
+          <span class="popup-value">${p.duration}</span>
+        </div>` : ""}
+
       <div class="popup-row">
-        <span class="popup-label">Start</span>
-        <span class="popup-value">${p.start}</span>
-      </div>` : ""}
-
-    ${p.end ? `
-      <div class="popup-row">
-        <span class="popup-label">End</span>
-        <span class="popup-value">${p.end}</span>
-      </div>` : ""}
-
-    ${p.duration ? `
-      <div class="popup-row">
-        <span class="popup-label">Duration</span>
-        <span class="popup-value">${p.duration}</span>
-      </div>` : ""}
-
-    <div class="popup-row">
-      <span class="popup-label">Location</span>
-      <span class="popup-value">${p.lat}, ${p.lng}</span>
+        <span class="popup-label">Location</span>
+        <span class="popup-value">${p.lat}, ${p.lng}</span>
+      </div>
     </div>
-  </div>
-`;
+  `;
+
   var marker = L.marker([p.lat, p.lng])
     .bindPopup(popupContent, {
-  maxWidth: 350,
-  minWidth: 250
-});
+      maxWidth: 350,
+      minWidth: 250
+    });
 
   markers.addLayer(marker);
 });
 
 // Add to map
 map.addLayer(markers);
-
-// Fit bounds
-var map = L.map('map', {
-  maxZoom: 20
-}).setView([52.86, -104.60], 13);
 </script>
 
 </body>
