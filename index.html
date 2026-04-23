@@ -87,7 +87,7 @@ var markers = L.markerClusterGroup({
 
 // Add markers
 stops.forEach(function(p, i) {
-  if (!p.lat || !p.lng) return;
+  if (p.lat == null || p.lng == null) return;
 
   var popupContent = `
   <div class="popup-card">
