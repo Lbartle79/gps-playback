@@ -49,5 +49,50 @@ const stops = [
     end: "2025-07-19 06:20",
     duration: "37 minutes"
   }
+  // ===== OCTOBER 30 (late evening) =====
+{
+  lat: 52.859778,
+  lng: -104.600837,
+  start: "2025-10-30 22:38",
+  end: "2025-10-30 22:47",
+  duration: "9 minutes"
+},
+{
+  lat: 52.859823,
+  lng: -104.601245,
+  start: "2025-10-30 23:03",
+  end: "2025-10-30 23:09",
+  duration: "6 minutes"
+},
+{
+  lat: 52.859985,
+  lng: -104.601017,
+  start: "2025-10-30 23:18",
+  end: "2025-10-30 23:26",
+  duration: "8 minutes"
+},
+
+// ===== OCTOBER 31 (morning) =====
+{
+  lat: 52.860250,
+  lng: -104.600920,
+  start: "2025-10-31 08:12",
+  end: "2025-10-31 08:45",
+  duration: "33 minutes"
+},
+{
+  lat: 52.860410,
+  lng: -104.601300,
+  start: "2025-10-31 09:10",
+  end: "2025-10-31 09:28",
+  duration: "18 minutes"
+},
+{
+  lat: 52.860600,
+  lng: -104.601150,
+  start: "2025-10-31 10:05",
+  end: "2025-10-31 10:40",
+  duration: "35 minutes"
+},
 
 ];
