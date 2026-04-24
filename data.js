@@ -327,4 +327,82 @@ const stops = [
     start: "2025-09-25 06:54",
     end: "2025-09-25 07:09",
     duration: "15 minutes"
-  }
+  },
+  {
+    lat: 52.859912,
+    lng: -104.601058,
+    start: "2025-09-27 00:12",
+    end: "2025-09-27 01:08",
+    duration: "56 minutes"
+  },
+  {
+    lat: 52.859875,
+    lng: -104.601022,
+    start: "2025-09-27 01:15",
+    end: "2025-09-27 02:42",
+    duration: "1 hour 27 minutes"
+  },
+  {
+    lat: 52.859940,
+    lng: -104.601095,
+    start: "2025-09-27 02:55",
+    end: "2025-09-27 04:30",
+    duration: "1 hour 35 minutes"
+  },
+  {
+    lat: 52.859880,
+    lng: -104.601060,
+    start: "2025-09-27 04:42",
+    end: "2025-09-27 06:18",
+    duration: "1 hour 36 minutes"
+  },
+  {
+    lat: 52.859905,
+    lng: -104.601110,
+    start: "2025-09-27 06:30",
+    end: "2025-09-27 07:55",
+    duration: "1 hour 25 minutes"
+  },
+  {
+    lat: 52.859842,
+    lng: -104.601045,
+    start: "2025-09-27 08:10",
+    end: "2025-09-27 10:42",
+    duration: "2 hours 32 minutes"
+  },
+  {
+    lat: 52.859915,
+    lng: -104.601082,
+    start: "2025-09-27 11:00",
+    end: "2025-09-27 13:18",
+    duration: "2 hours 18 minutes"
+  },
+  {
+    lat: 52.859870,
+    lng: -104.601030,
+    start: "2025-09-27 13:30",
+    end: "2025-09-27 15:52",
+    duration: "2 hours 22 minutes"
+  },
+  {
+    lat: 52.859933,
+    lng: -104.601067,
+    start: "2025-09-27 16:05",
+    end: "2025-09-27 18:44",
+    duration: "2 hours 39 minutes"
+  },
+  {
+    lat: 52.859888,
+    lng: -104.601095,
+    start: "2025-09-27 19:00",
+    end: "2025-09-27 22:36",
+    duration: "3 hours 36 minutes"
+  },
+  {
+    lat: 52.859910,
+    lng: -104.601050,
+    start: "2025-09-27 22:48",
+    end: "2025-09-28 01:22",
+    duration: "2 hours 34 minutes"
+  },
+  ];
