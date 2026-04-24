@@ -704,7 +704,7 @@ const stops = [
     start: "2025-09-27 09:10",
     end: "2025-09-27 11:42",
     duration: "2 hours 32 minutes"
-  },
+  }
 
 ];
   
