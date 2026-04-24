@@ -328,4 +328,3 @@ const stops = [
     end: "2025-09-25 07:09",
     duration: "15 minutes"
   }
-  ];
