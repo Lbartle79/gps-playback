@@ -2,10 +2,152 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>AK6-70798 GPS Map</title>
+  <title>GPS Map</title>
+
+  <!-- Leaflet -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+
+  <!-- Cluster -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css"/>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.Default.css"/>
+
+  <style>
+    body { margin:0; }
+    #map { height:100vh; }
+
+    .leaflet-popup-content-wrapper {
+      border-radius: 16px;
+      padding: 0;
+      overflow: hidden;
+    }
+
+    .leaflet-popup-content {
+      margin: 0;
+      font-size: 18px;
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    .popup-card {
+      padding: 16px;
+    }
+
+    .popup-title {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+
+    .popup-row {
+      margin-bottom: 8px;
+    }
+
+    .popup-label {
+      font-weight: 600;
+      color: #555;
+    }
+
+    .popup-value {
+      display: block;
+      font-size: 18px;
+      margin-top: 2px;
+    }
+  </style>
 </head>
+
 <body>
-  <h1>AK6-70798 GPS Map</h1>
-  <p>Map setup successful.</p>
+
+<div id="map"></div>
+
+<!-- Leaflet -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<!-- Cluster -->
+<script src="https://unpkg.com/leaflet.markercluster/dist/leaflet.markercluster.js"></script>
+
+<!-- YOUR DATA -->
+<script src="data.js"></script>
+
+<script>
+
+// ================= MAP =================
+var map = L.map('map', {
+  maxZoom: 20
+}).setView([52.86, -104.60], 16);
+
+// Tile layer
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  maxZoom: 20
+}).addTo(map);
+
+// ================= SORT DATA =================
+stops.sort((a, b) => {
+  if (!a.start || !b.start) return 0;
+  return new Date(a.start) - new Date(b.start);
+});
+
+// ================= CLUSTER =================
+var markers = L.markerClusterGroup({
+  spiderfyOnMaxZoom: true,
+  showCoverageOnHover: false,
+  zoomToBoundsOnClick: true,
+  maxClusterRadius: 15
+});
+
+stops.sort((a, b) => {
+  if (!a.start || !b.start) return 0;
+  return new Date(a.start) - new Date(b.start);
+});
+
+stops.forEach(function(p) {
+  if (p.lat == null || p.lng == null) return;
+
+  var popupContent = `
+    <div class="popup-card">
+      <div class="popup-title">📍 Stop</div>
+
+      ${p.start ? `
+      <div class="popup-row">
+        <span class="popup-label">Start</span>
+        <span class="popup-value">${p.start}</span>
+      </div>` : ""}
+
+      ${p.end ? `
+      <div class="popup-row">
+        <span class="popup-label">End</span>
+        <span class="popup-value">${p.end}</span>
+      </div>` : ""}
+
+      ${p.duration ? `
+      <div class="popup-row">
+        <span class="popup-label">Duration</span>
+        <span class="popup-value">${p.duration}</span>
+      </div>` : ""}
+
+      <div class="popup-row">
+        <span class="popup-label">Location</span>
+        <span class="popup-value">${p.lat}, ${p.lng}</span>
+      </div>
+    </div>
+  `;
+
+  var marker = L.marker([p.lat, p.lng])
+    .bindPopup(popupContent, {
+      maxWidth: 350,
+      minWidth: 250
+    });
+
+  markers.addLayer(marker);
+});
+
+// ================= ADD TO MAP =================
+map.addLayer(markers);
+
+// ================= FIT TO DATA =================
+if (markers.getLayers().length > 0) {
+  map.fitBounds(markers.getBounds());
+}
+
+</script>
+
 </body>
 </html>
