@@ -7,49 +7,48 @@
   <!-- Leaflet -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 
-  <!-- Cluster -->
+  <!-- Marker Clusters -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css"/>
   <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.Default.css"/>
 
   <style>
-    body { margin:0; }
-    #map { height:100vh; }
+    body {
+      margin: 0;
+      padding: 0;
+    }
+
+    #map {
+      height: 100vh;
+      width: 100%;
+    }
 
     .leaflet-popup-content-wrapper {
       border-radius: 16px;
-      padding: 0;
-      overflow: hidden;
-    }
-
-    .leaflet-popup-content {
-      margin: 0;
-      font-size: 18px;
-      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
     }
 
     .popup-card {
-      padding: 16px;
+      padding: 4px;
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
     }
 
     .popup-title {
-      font-size: 20px;
-      font-weight: 700;
-      margin-bottom: 10px;
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 8px;
     }
 
     .popup-row {
-      margin-bottom: 8px;
+      margin-bottom: 6px;
     }
 
     .popup-label {
       font-weight: 600;
       color: #555;
+      display: block;
     }
 
     .popup-value {
       display: block;
-      font-size: 18px;
-      margin-top: 2px;
     }
   </style>
 </head>
@@ -61,90 +60,113 @@
 <!-- Leaflet -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-<!-- Cluster -->
+<!-- Marker Clusters -->
 <script src="https://unpkg.com/leaflet.markercluster/dist/leaflet.markercluster.js"></script>
 
-<!-- YOUR DATA -->
+<!-- Your stop data -->
 <script src="data.js"></script>
 
 <script>
 
-// ================= MAP =================
+// ===================== MAP =====================
+
 var map = L.map('map', {
   maxZoom: 20
-}).setView([52.86, -104.60], 16);
+});
 
-// Tile layer
+// OpenStreetMap
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-  maxZoom: 20
+  maxZoom: 20,
+  attribution: '&copy; OpenStreetMap'
 }).addTo(map);
 
-// ================= SORT DATA =================
+// ===================== SORT =====================
+
 stops.sort((a, b) => {
   if (!a.start || !b.start) return 0;
   return new Date(a.start) - new Date(b.start);
 });
 
-// ================= CLUSTER =================
+// ===================== CLUSTERS =====================
+
 var markers = L.markerClusterGroup({
   spiderfyOnMaxZoom: true,
   showCoverageOnHover: false,
   zoomToBoundsOnClick: true,
-  maxClusterRadius: 15
+
+  /* MUCH LESS AGGRESSIVE */
+  maxClusterRadius: 5,
+
+  /* SHOW INDIVIDUAL MARKERS SOONER */
+  disableClusteringAtZoom: 14
 });
 
-stops.sort((a, b) => {
-  if (!a.start || !b.start) return 0;
-  return new Date(a.start) - new Date(b.start);
-});
+// ===================== MARKERS =====================
 
-stops.forEach(function(p) {
+stops.forEach(function(p, index) {
+
   if (p.lat == null || p.lng == null) return;
 
   var popupContent = `
     <div class="popup-card">
-      <div class="popup-title">📍 Stop</div>
+
+      <div class="popup-title">
+        📍 Stop ${index + 1}
+      </div>
 
       ${p.start ? `
       <div class="popup-row">
         <span class="popup-label">Start</span>
         <span class="popup-value">${p.start}</span>
-      </div>` : ""}
+      </div>` : ''}
 
       ${p.end ? `
       <div class="popup-row">
         <span class="popup-label">End</span>
         <span class="popup-value">${p.end}</span>
-      </div>` : ""}
+      </div>` : ''}
 
       ${p.duration ? `
       <div class="popup-row">
         <span class="popup-label">Duration</span>
         <span class="popup-value">${p.duration}</span>
-      </div>` : ""}
+      </div>` : ''}
 
       <div class="popup-row">
-        <span class="popup-label">Location</span>
-        <span class="popup-value">${p.lat}, ${p.lng}</span>
+        <span class="popup-label">Latitude</span>
+        <span class="popup-value">${p.lat}</span>
       </div>
+
+      <div class="popup-row">
+        <span class="popup-label">Longitude</span>
+        <span class="popup-value">${p.lng}</span>
+      </div>
+
     </div>
   `;
 
-  var marker = L.marker([p.lat, p.lng])
-    .bindPopup(popupContent, {
-      maxWidth: 350,
-      minWidth: 250
-    });
+  var marker = L.marker([p.lat, p.lng]);
+
+  marker.bindPopup(popupContent, {
+    maxWidth: 350
+  });
 
   markers.addLayer(marker);
 });
 
-// ================= ADD TO MAP =================
+// ===================== ADD TO MAP =====================
+
 map.addLayer(markers);
 
-// ================= FIT TO DATA =================
+// ===================== FIT ALL STOPS =====================
+
 if (markers.getLayers().length > 0) {
-  map.fitBounds(markers.getBounds());
+  map.fitBounds(markers.getBounds(), {
+    padding: [25, 25]
+  });
+}
+else {
+  map.setView([52.86, -104.60], 12);
 }
 
 </script>
